@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI WG THAILAND</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Kanit', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            font-size: 5em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        h1 {
+            font-size: 4em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+        }
+        
+        .subtitle {
+            color: #888888;
+            font-size: 1.4em;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .main-content {
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .form-group {
+            margin-bottom: 40px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 15px;
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 1.3em;
+            letter-spacing: 0.5px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            font-size: 1.1em;
+            resize: vertical;
+            min-height: 140px;
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+        
+        textarea::placeholder {
+            color: #666666;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+        
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .mode-option {
+            position: relative;
+        }
+        
+        .mode-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .mode-card {
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.03);
+            text-align: center;
+        }
+        
+        .mode-option input[type="radio"]:checked + .mode-card {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .mode-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .mode-icon {
+            font-size: 3em;
+            margin-bottom: 12px;
+            filter: grayscale(0.3);
+        }
+        
+        .mode-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+        }
+        
+        .mode-desc {
+            font-size: 0.95em;
+            color: #888888;
+            font-weight: 300;
+        }
+        
+        .duration-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.5);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+        
+        .duration-value {
+            font-weight: 600;
+            color: #ffffff;
+            min-width: 100px;
+            font-size: 1.3em;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 24px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.4em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Kanit', sans-serif;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+            letter-spacing: 1px;
+        }
+        
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.3);
+            background: #f0f0f0;
+        }
+        
+        .generate-btn:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 40px 0;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .loading.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #ffffff;
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        
+        .loading-subtext {
+            color: #888888;
+            font-size: 1em;
+            margin-top: 12px;
+            font-weight: 300;
+        }
+        
+        .result {
+            display: none;
+            margin-top: 40px;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result.active {
+            display: block;
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result h3 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        
+        video {
+            width: 100%;
+            border-radius: 16px;
+            margin-top: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .video-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: #888888;
+            font-size: 1.05em;
+        }
+        
+        .video-info strong {
+            color: #ffffff;
+        }
+        
+        .error {
+            display: none;
+            padding: 25px;
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid rgba(220, 38, 38, 0.3);
+            border-radius: 16px;
+            color: #ff6b6b;
+            margin-top: 30px;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        
+        .error.active {
+            display: block;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .tips {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: 16px;
+            margin-top: 30px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .tips-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .tips-list {
+            list-style: none;
+            color: #888888;
+        }
+        
+        .tips-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+            font-weight: 300;
+            font-size: 1.05em;
+        }
+        
+        .tips-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 15px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .logo {
+                font-size: 3.5em;
+            }
+            
+            .form-section {
+                padding: 30px 20px;
+            }
+            
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .generate-btn {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎬</div>
+            <h1>AI WG THAILAND</h1>
+            <p class="subtitle">สร้างวิดีโอสุดล้ำด้วยปัญญาประดิษฐ์</p>
+        </div>
+        
+        <div class="main-content">
+            <form id="videoForm">
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="prompt">📝 คำอธิบายวิดีโอที่ต้องการ</label>
+                        <textarea 
+                            id="prompt" 
+                            placeholder="เช่น: แมวน้อยกำลังเล่นกับลูกบอลขนสัตว์ในสวน, ดอกไม้บานสะพรั่งในสวนสวย, คลื่นทะเลซัดฝั่งยามพระอาทิตย์ตก"
+                            required
+                        ></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🎨 โหมดการสร้าง</label>
+                        <div class="mode-selector">
+                            <div class="mode-option">
+                                <input type="radio" id="realistic" name="mode" value="realistic" checked>
+                                <label for="realistic" class="mode-card">
+                                    <div class="mode-icon">✨</div>
+                                    <div class="mode-title">เหมือนจริง</div>
+                                    <div class="mode-desc">คุณภาพสูง สมจริง</div>
+                                </label>
+                            </div>
+                            <div class="mode-option">
+                                <input type="radio" id="standard" name="mode" value="standard">
+                                <label for="standard" class="mode-card">
+                                    <div class="mode-icon">🎨</div>
+                                    <div class="mode-title">ธรรมดา</div>
+                                    <div class="mode-desc">สร้างเร็ว ใช้งานทั่วไป</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>⏱️ ระยะเวลาวิดีโอ</label>
+                        <div class="duration-group">
+                            <input type="range" id="duration" min="2" max="8" value="4" step="1">
+                            <span class="duration-value"><span id="durationValue">4</span> วินาที</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="generate-btn" id="generateBtn">
+                    🚀 สร้างวิดีโอ
+                </button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">กำลังสร้างวิดีโอของคุณ...</p>
+                <p class="loading-subtext">โปรดรอสักครู่ (ประมาณ 1-3 นาที)</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="result" id="result">
+                <h3>✅ สร้างวิดีโอสำเร็จ</h3>
+                <video id="videoPlayer" controls></video>
+                <div class="video-info">
+                    <strong>ชื่อไฟล์:</strong> <span id="filename"></span>
+                </div>
+            </div>
+            
+            <div class="tips">
+                <div class="tips-title">💡 เคล็ดลับการใช้งาน</div>
+                <ul class="tips-list">
+                    <li>เขียนคำอธิบายเป็นภาษาไทยหรืออังกฤษก็ได้</li>
+                    <li>ยิ่งคำอธิบายละเอียด วิดีโอจะยิ่งตรงใจ</li>
+                    <li>โหมดเหมือนจริงให้ผลลัพธ์คุณภาพสูงกว่า</li>
+                    <li>การสร้างวิดีโอครั้งแรกอาจใช้เวลานานกว่าปกติ</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('videoForm');
+        const promptInput = document.getElementById('prompt');
+        const durationInput = document.getElementById('duration');
+        const durationValue = document.getElementById('durationValue');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const filenameSpan = document.getElementById('filename');
+        
+        // อัพเดทค่าระยะเวลา
+        durationInput.addEventListener('input', (e) => {
+            durationValue.textContent = e.target.value;
+        });
+        
+        // ส่งฟอร์ม
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const prompt = promptInput.value.trim();
+            const duration = parseInt(durationInput.value);
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            
+            if (!prompt) {
+                showError('กรุณาใส่คำอธิบายวิดีโอ');
+                return;
+            }
+            
+            // ซ่อนผลลัพธ์เก่า
+            result.classList.remove('active');
+            error.classList.remove('active');
+            
+            // แสดง loading
+            loading.classList.add('active');
+            generateBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, duration, mode })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'เกิดข้อผิดพลาด');
+                }
+                
+                // แสดงวิดีโอ
+                videoPlayer.src = data.video_url;
+                filenameSpan.textContent = data.filename;
+                result.classList.add('active');
+                
+                // เลื่อนไปที่ผลลัพธ์
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        });
+        
+        function showError(message) {
+            error.textContent = '❌ ' + message;
+            error.classList.add('active');
+            error.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
