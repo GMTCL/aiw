@@ -84,26 +84,47 @@ def generate_video():
         # ตั้งค่า API token
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         
-        # ใช้ Zeroscope V2 XL - Text to Video (คุณภาพดี รองรับ 8 วินาที)
-        print("🤖 ใช้ model: Zeroscope V2 XL")
-        print("🎬 กำลังสร้างวิดีโอ...")
+        # ขั้นตอนที่ 1: สร้างรูปภาพคุณภาพสูง
+        print("📸 กำลังสร้างรูปภาพคุณภาพสูง...")
         
         # ปรับ prompt ให้สมจริงขึ้น
-        enhanced_prompt = f"photorealistic, 4k, cinematic, detailed: {prompt}"
+        enhanced_prompt = f"professional photography, photorealistic, 8k uhd, highly detailed, cinematic lighting, sharp focus: {prompt}"
         
-        # ปรับ inference steps ตามโหมด
-        inference_steps = 50 if mode == 'realistic' else 30
+        # เลือก model สร้างรูปตามโหมด
+        if mode == 'realistic':
+            image_model = "black-forest-labs/flux-1.1-pro"
+            image_steps = 28
+        else:
+            image_model = "black-forest-labs/flux-schnell"
+            image_steps = 4
         
-        # สร้างวิดีโอด้วย Zeroscope V2 XL
-        output = replicate.run(
-            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+        image_output = replicate.run(
+            image_model,
             input={
                 "prompt": enhanced_prompt,
-                "num_frames": min(duration * 24, 192),
-                "num_inference_steps": inference_steps,
-                "guidance_scale": 17.5,
-                "width": 1024,
-                "height": 576
+                "aspect_ratio": "16:9",
+                "output_format": "png",
+                "output_quality": 100,
+                "safety_tolerance": 2
+            }
+        )
+        
+        first_frame = str(image_output[0] if isinstance(image_output, list) else image_output)
+        print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
+        
+        # ขั้นตอนที่ 2: แปลงเป็นวิดีโอ
+        print("🎬 กำลังสร้างวิดีโอ...")
+        print("🤖 ใช้ model: Stable Video Diffusion")
+        
+        output = replicate.run(
+            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+            input={
+                "input_image": first_frame,
+                "video_length": "25_frames_with_svd_xt",
+                "sizing_strategy": "maintain_aspect_ratio",
+                "frames_per_second": 6,
+                "motion_bucket_id": 127,
+                "cond_aug": 0.02
             }
         )
         
