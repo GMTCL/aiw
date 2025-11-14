@@ -84,8 +84,8 @@ def generate_video():
         # ตั้งค่า API token
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         
-        # ใช้ Wan 2.1 - Image to Video (ราคาถูก คุณภาพดี)
-        print("🤖 ใช้ model: Wan 2.1 i2v-720p")
+        # ใช้ Stable Video Diffusion - Image to Video
+        print("🤖 ใช้ model: Stable Video Diffusion")
         
         # ขั้นตอนที่ 1: สร้างรูปภาพจากคำอธิบาย
         print("📸 กำลังสร้างรูปภาพ...")
