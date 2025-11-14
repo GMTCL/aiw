@@ -84,37 +84,33 @@ def generate_video():
         # ตั้งค่า API token
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         
-        # ขั้นตอนที่ 1: สร้างรูปภาพคุณภาพสูง
-        print("📸 กำลังสร้างรูปภาพคุณภาพสูง...")
+        # สร้างรูปภาพคุณภาพสูง
+        print("📸 กำลังสร้างรูปภาพ...")
         
         # ปรับ prompt ให้สมจริงขึ้น
-        enhanced_prompt = f"professional photography, photorealistic, 8k uhd, highly detailed, cinematic lighting, sharp focus: {prompt}"
-        
-        # เลือก model สร้างรูปตามโหมด
         if mode == 'realistic':
-            image_model = "black-forest-labs/flux-1.1-pro"
-            image_steps = 28
+            enhanced_prompt = f"professional photograph, photorealistic, highly detailed, 8k resolution, cinematic lighting: {prompt}"
+            image_model = "black-forest-labs/flux-dev"
         else:
+            enhanced_prompt = f"photorealistic, detailed: {prompt}"
             image_model = "black-forest-labs/flux-schnell"
-            image_steps = 4
+        
+        print(f"🤖 ใช้ model: {image_model}")
         
         image_output = replicate.run(
             image_model,
             input={
                 "prompt": enhanced_prompt,
                 "aspect_ratio": "16:9",
-                "output_format": "png",
-                "output_quality": 100,
-                "safety_tolerance": 2
+                "output_format": "png"
             }
         )
         
         first_frame = str(image_output[0] if isinstance(image_output, list) else image_output)
         print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
         
-        # ขั้นตอนที่ 2: แปลงเป็นวิดีโอ
+        # แปลงเป็นวิดีโอ
         print("🎬 กำลังสร้างวิดีโอ...")
-        print("🤖 ใช้ model: Stable Video Diffusion")
         
         output = replicate.run(
             "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
