@@ -122,6 +122,25 @@
             letter-spacing: 0.5px;
         }
         
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            gap: 12px;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #ff6b6b;
+        }
+        
+        .checkbox-label span {
+            user-select: none;
+        }
+        
         textarea {
             width: 100%;
             padding: 20px;
@@ -519,9 +538,16 @@
                     <div class="form-group">
                         <label>⏱️ ระยะเวลาวิดีโอ</label>
                         <div class="duration-group">
-                            <input type="range" id="duration" min="2" max="8" value="4" step="1">
-                            <span class="duration-value"><span id="durationValue">4</span> วินาที</span>
+                            <input type="range" id="duration" min="3" max="5" value="5" step="1">
+                            <span class="duration-value"><span id="durationValue">5</span> วินาที</span>
                         </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="addVoice">
+                            <span>🎤 เพิ่มเสียงพากย์ภาษาไทย</span>
+                        </label>
                     </div>
                 </div>
                 
@@ -582,6 +608,7 @@
             const prompt = promptInput.value.trim();
             const duration = parseInt(durationInput.value);
             const mode = document.querySelector('input[name="mode"]:checked').value;
+            const addVoice = document.getElementById('addVoice').checked;
             
             if (!prompt) {
                 showError('กรุณาใส่คำอธิบายวิดีโอ');
@@ -602,7 +629,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ prompt, duration, mode })
+                    body: JSON.stringify({ prompt, duration, mode, add_voice: addVoice })
                 });
                 
                 const data = await response.json();

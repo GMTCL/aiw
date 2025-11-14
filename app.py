@@ -7,20 +7,34 @@ import requests
 import time
 from pathlib import Path
 import re
+from gtts import gTTS
+try:
+    from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    MOVIEPY_AVAILABLE = False
+    print("⚠️  MoviePy ไม่พร้อมใช้งาน - ฟีเจอร์เสียงพากย์จะถูกปิด")
+import tempfile
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# สร้างโฟลเดอร์สำหรับเก็บวิดีโอ
+# สร้างโฟลเดอร์สำหรับเก็บวิดีโอและเสียง
 VIDEOS_DIR = Path("videos")
 VIDEOS_DIR.mkdir(exist_ok=True)
+AUDIO_DIR = Path("audio")
+AUDIO_DIR.mkdir(exist_ok=True)
 
 # ตรวจสอบ API token
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
+LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
+
 if not REPLICATE_API_TOKEN:
     print("⚠️  กรุณาตั้งค่า REPLICATE_API_TOKEN ในไฟล์ .env")
+if not LUMAAI_API_KEY:
+    print("⚠️  กรุณาตั้งค่า LUMAAI_API_KEY ในไฟล์ .env")
 
 @app.route('/')
 def index():
@@ -56,13 +70,72 @@ def translate_thai_to_english(text):
         # ถ้าแปลไม่ได้ ใช้ข้อความเดิม
         return text
 
+def add_thai_voiceover(video_path, text):
+    """เพิ่มเสียงพากย์ภาษาไทยให้กับวิดีโอ"""
+    if not MOVIEPY_AVAILABLE:
+        print("⚠️  MoviePy ไม่พร้อมใช้งาน - ข้ามการเพิ่มเสียง")
+        return video_path
+    
+    try:
+        print(f"🎤 กำลังสร้างเสียงพากย์: {text}")
+        
+        # สร้างไฟล์เสียงจาก text
+        timestamp = int(time.time())
+        audio_file = AUDIO_DIR / f"voice_{timestamp}.mp3"
+        
+        tts = gTTS(text=text, lang='th', slow=False)
+        tts.save(str(audio_file))
+        
+        print(f"✅ สร้างเสียงเสร็จ: {audio_file}")
+        
+        # รวมเสียงกับวิดีโอ
+        print("🎬 กำลังรวมเสียงกับวิดีโอ...")
+        
+        video = VideoFileClip(str(video_path))
+        audio = AudioFileClip(str(audio_file))
+        
+        # ถ้าวิดีโอมีเสียงอยู่แล้ว ให้รวมกัน
+        if video.audio:
+            final_audio = CompositeAudioClip([video.audio, audio])
+        else:
+            final_audio = audio
+        
+        video_with_audio = video.set_audio(final_audio)
+        
+        # บันทึกวิดีโอใหม่
+        output_path = video_path.parent / f"voiced_{video_path.name}"
+        video_with_audio.write_videofile(
+            str(output_path),
+            codec='libx264',
+            audio_codec='aac',
+            temp_audiofile=str(AUDIO_DIR / f"temp_{timestamp}.m4a"),
+            remove_temp=True,
+            logger=None
+        )
+        
+        # ปิด clips
+        video.close()
+        audio.close()
+        video_with_audio.close()
+        
+        # ลบไฟล์เสียงชั่วคราว
+        audio_file.unlink()
+        
+        print(f"✅ รวมเสียงเสร็จ: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        print(f"⚠️  ไม่สามารถเพิ่มเสียงได้: {str(e)}")
+        return video_path
+
 @app.route('/api/generate', methods=['POST'])
 def generate_video():
     try:
         data = request.json
         prompt = data.get('prompt', '')
-        duration = min(int(data.get('duration', 3)), 8)  # จำกัดไม่เกิน 8 วินาที (ข้อจำกัดของ model)
+        duration = min(int(data.get('duration', 5)), 5)  # Luma AI รองรับสูงสุด 5 วินาที
         mode = data.get('mode', 'realistic')  # realistic หรือ standard
+        add_voice = data.get('add_voice', False)  # เพิ่มเสียงพากย์หรือไม่
         
         if not prompt:
             return jsonify({'error': 'กรุณาใส่คำอธิบายวิดีโอ'}), 400
@@ -81,55 +154,83 @@ def generate_video():
         print(f"⏱️  ระยะเวลา: {duration} วินาที")
         print(f"🎨 โหมด: {mode}")
         
-        # ตั้งค่า API token
-        os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
+        if not LUMAAI_API_KEY:
+            return jsonify({'error': 'ไม่พบ Luma AI API key กรุณาตั้งค่าในไฟล์ .env'}), 500
         
-        # สร้างรูปภาพคุณภาพสูง
-        print("📸 กำลังสร้างรูปภาพ...")
+        print(f"🎬 กำลังสร้างวิดีโอด้วย Luma AI Dream Machine...")
+        print(f"📝 Prompt: {prompt}")
         
-        # ปรับ prompt ให้สมจริงขึ้น
-        if mode == 'realistic':
-            enhanced_prompt = f"professional photograph, photorealistic, highly detailed, 8k resolution, cinematic lighting: {prompt}"
-            image_model = "black-forest-labs/flux-dev"
+        # เรียก Luma AI API ตาม documentation
+        luma_url = "https://api.lumalabs.ai/dream-machine/v1/generations"
+        headers = {
+            "Authorization": f"Bearer {LUMAAI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "ray-2",
+            "prompt": prompt,
+            "aspect_ratio": "16:9"
+        }
+        
+        # สร้างวิดีโอ
+        print("📤 ส่งคำขอไปยัง Luma AI...")
+        response = requests.post(luma_url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code != 201:
+            error_detail = response.text
+            print(f"❌ Luma AI Error: {error_detail}")
+            raise Exception(f"Luma AI API Error ({response.status_code}): {error_detail}")
+        
+        generation_data = response.json()
+        generation_id = generation_data.get("id")
+        
+        if not generation_id:
+            raise Exception("ไม่ได้รับ generation ID จาก Luma AI")
+        
+        print(f"⏳ กำลังสร้างวิดีโอ... (ID: {generation_id})")
+        
+        # รอให้วิดีโอสร้างเสร็จ (polling)
+        max_attempts = 120  # รอสูงสุด 10 นาที
+        attempt = 0
+        
+        while attempt < max_attempts:
+            time.sleep(5)  # รอ 5 วินาทีต่อครั้ง
+            attempt += 1
+            
+            # เช็คสถานะ
+            status_response = requests.get(
+                f"{luma_url}/{generation_id}",
+                headers=headers,
+                timeout=10
+            )
+            
+            if status_response.status_code != 200:
+                print(f"⚠️  ไม่สามารถเช็คสถานะได้: {status_response.status_code}")
+                continue
+            
+            status_data = status_response.json()
+            state = status_data.get("state")
+            print(f"📊 สถานะ: {state} ({attempt}/{max_attempts})")
+            
+            if state == "completed":
+                video_data = status_data.get("assets", {})
+                video_url = video_data.get("video")
+                
+                if not video_url:
+                    raise Exception("ไม่พบ URL วิดีโอในผลลัพธ์")
+                
+                print(f"✅ สร้างวิดีโอเสร็จแล้ว!")
+                output = video_url
+                break
+            elif state == "failed":
+                error_msg = status_data.get("failure_reason", "Unknown error")
+                raise Exception(f"การสร้างวิดีโอล้มเหลว: {error_msg}")
         else:
-            enhanced_prompt = f"photorealistic, detailed: {prompt}"
-            image_model = "black-forest-labs/flux-schnell"
-        
-        print(f"🤖 ใช้ model: {image_model}")
-        
-        image_output = replicate.run(
-            image_model,
-            input={
-                "prompt": enhanced_prompt,
-                "aspect_ratio": "16:9",
-                "output_format": "png"
-            }
-        )
-        
-        first_frame = str(image_output[0] if isinstance(image_output, list) else image_output)
-        print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
-        
-        # แปลงเป็นวิดีโอ
-        print("🎬 กำลังสร้างวิดีโอ...")
-        
-        output = replicate.run(
-            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-            input={
-                "input_image": first_frame,
-                "video_length": "25_frames_with_svd_xt",
-                "sizing_strategy": "maintain_aspect_ratio",
-                "frames_per_second": 6,
-                "motion_bucket_id": 127,
-                "cond_aug": 0.02
-            }
-        )
+            raise Exception("หมดเวลารอการสร้างวิดีโอ (10 นาที)")
         
         # ดาวน์โหลดวิดีโอ
-        # แปลง output เป็น string URL
-        if isinstance(output, list):
-            video_url = str(output[0])
-        else:
-            video_url = str(output)
+        video_url = str(output)
         
         print(f"📥 กำลังดาวน์โหลดวิดีโอจาก: {video_url}")
         
@@ -137,14 +238,24 @@ def generate_video():
         filename = f"video_{timestamp}.mp4"
         filepath = VIDEOS_DIR / filename
         
-        response = requests.get(video_url, timeout=60)
-        response.raise_for_status()
+        video_response = requests.get(video_url, timeout=120)
+        video_response.raise_for_status()
         
         with open(filepath, 'wb') as f:
-            f.write(response.content)
+            f.write(video_response.content)
         
         file_size = filepath.stat().st_size / (1024 * 1024)  # MB
         print(f"✅ สร้างวิดีโอสำเร็จ: {filename} ({file_size:.2f} MB)")
+        
+        # เพิ่มเสียงพากย์ถ้าเลือก
+        final_filepath = filepath
+        if add_voice:
+            print("🎤 กำลังเพิ่มเสียงพากย์ภาษาไทย...")
+            voiced_filepath = add_thai_voiceover(filepath, original_prompt)
+            if voiced_filepath != filepath:
+                final_filepath = voiced_filepath
+                filename = final_filepath.name
+                print(f"✅ เพิ่มเสียงพากย์สำเร็จ!")
         
         return jsonify({
             'success': True,
