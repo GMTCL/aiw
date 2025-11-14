@@ -84,51 +84,20 @@ def generate_video():
         # ตั้งค่า API token
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         
-        # ใช้ Stable Video Diffusion - Image to Video
-        print("🤖 ใช้ model: Stable Video Diffusion")
+        # ใช้ Luma AI Dream Machine - Text to Video โดยตรง
+        print("🤖 ใช้ model: Luma AI Dream Machine")
+        print("🎬 กำลังสร้างวิดีโอ...")
         
-        # ขั้นตอนที่ 1: สร้างรูปภาพจากคำอธิบาย
-        print("📸 กำลังสร้างรูปภาพ...")
+        # ปรับ prompt ให้สมจริงขึ้น
+        enhanced_prompt = f"Cinematic, photorealistic, high quality: {prompt}"
         
-        # เลือก model สร้างรูปตามโหมด
-        if mode == 'realistic':
-            # โหมดเหมือนจริง - ใช้ FLUX Dev (คุณภาพสูง)
-            image_model = "black-forest-labs/flux-dev"
-            image_steps = 28
-        else:
-            # โหมดธรรมดา - ใช้ FLUX Schnell (เร็วและถูก)
-            image_model = "black-forest-labs/flux-schnell"
-            image_steps = 4
-        
-        image_output = replicate.run(
-            image_model,
-            input={
-                "prompt": prompt,
-                "num_inference_steps": image_steps,
-                "aspect_ratio": "16:9",
-                "output_format": "png",
-                "output_quality": 90
-            }
-        )
-        
-        # แปลง output เป็น string URL
-        if isinstance(image_output, list):
-            first_frame = str(image_output[0])
-        else:
-            first_frame = str(image_output)
-        
-        print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
-        
-        # ขั้นตอนที่ 2: แปลงรูปเป็นวิดีโอด้วย Stable Video Diffusion
-        print("🎬 กำลังสร้างวิดีโอจากรูปภาพ...")
+        # สร้างวิดีโอด้วย Luma AI
         output = replicate.run(
-            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+            "fofr/luma-photon:5b6f2f0c45e6f3c0e4c5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
             input={
-                "input_image": first_frame,
-                "video_length": "14_frames_with_svd",
-                "sizing_strategy": "maintain_aspect_ratio",
-                "frames_per_second": 6,
-                "motion_bucket_id": 127
+                "prompt": enhanced_prompt,
+                "aspect_ratio": "16:9",
+                "loop": False
             }
         )
         
