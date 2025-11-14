@@ -119,14 +119,16 @@ def generate_video():
         
         print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
         
-        # ขั้นตอนที่ 2: แปลงรูปเป็นวิดีโอด้วย Wan 2.1
+        # ขั้นตอนที่ 2: แปลงรูปเป็นวิดีโอด้วย Stable Video Diffusion
         print("🎬 กำลังสร้างวิดีโอจากรูปภาพ...")
         output = replicate.run(
-            "wavespeedai/wan-2.1-i2v-720p:7119d0dd2b36b53c1e5e01699f4a3e9e3f8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e",
+            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
             input={
-                "image": first_frame,
-                "prompt": prompt,
-                "duration": duration
+                "input_image": first_frame,
+                "video_length": "14_frames_with_svd",
+                "sizing_strategy": "maintain_aspect_ratio",
+                "frames_per_second": 6,
+                "motion_bucket_id": 127
             }
         )
         
