@@ -84,20 +84,26 @@ def generate_video():
         # ตั้งค่า API token
         os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
         
-        # ใช้ Luma AI Dream Machine - Text to Video โดยตรง
-        print("🤖 ใช้ model: Luma AI Dream Machine")
+        # ใช้ Zeroscope V2 XL - Text to Video (คุณภาพดี รองรับ 8 วินาที)
+        print("🤖 ใช้ model: Zeroscope V2 XL")
         print("🎬 กำลังสร้างวิดีโอ...")
         
         # ปรับ prompt ให้สมจริงขึ้น
-        enhanced_prompt = f"Cinematic, photorealistic, high quality: {prompt}"
+        enhanced_prompt = f"photorealistic, 4k, cinematic, detailed: {prompt}"
         
-        # สร้างวิดีโอด้วย Luma AI
+        # ปรับ inference steps ตามโหมด
+        inference_steps = 50 if mode == 'realistic' else 30
+        
+        # สร้างวิดีโอด้วย Zeroscope V2 XL
         output = replicate.run(
-            "fofr/luma-photon:5b6f2f0c45e6f3c0e4c5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
             input={
                 "prompt": enhanced_prompt,
-                "aspect_ratio": "16:9",
-                "loop": False
+                "num_frames": min(duration * 24, 192),
+                "num_inference_steps": inference_steps,
+                "guidance_scale": 17.5,
+                "width": 1024,
+                "height": 576
             }
         )
         
