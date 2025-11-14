@@ -111,7 +111,12 @@ def generate_video():
             }
         )
         
-        first_frame = image_output[0] if isinstance(image_output, list) else image_output
+        # แปลง output เป็น string URL
+        if isinstance(image_output, list):
+            first_frame = str(image_output[0])
+        else:
+            first_frame = str(image_output)
+        
         print(f"✅ สร้างรูปภาพเสร็จ: {first_frame}")
         
         # ขั้นตอนที่ 2: แปลงรูปเป็นวิดีโอด้วย Wan 2.1
@@ -126,9 +131,11 @@ def generate_video():
         )
         
         # ดาวน์โหลดวิดีโอ
-        video_url = output
+        # แปลง output เป็น string URL
         if isinstance(output, list):
-            video_url = output[0]
+            video_url = str(output[0])
+        else:
+            video_url = str(output)
         
         print(f"📥 กำลังดาวน์โหลดวิดีโอจาก: {video_url}")
         
